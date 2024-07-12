@@ -1,5 +1,5 @@
-acyncio
+tgcrypto
 datetime
 requests
-io
 pyrogram
+wikipedia-api
