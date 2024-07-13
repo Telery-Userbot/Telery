@@ -1,5 +1,4 @@
 tgcrypto
-datetime
-requests
 pyrogram
-wikipedia-api
+datetime
+importlib
