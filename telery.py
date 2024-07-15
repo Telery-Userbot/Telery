@@ -19,22 +19,25 @@ def load_modules():
         for line in file:
             module_name = line.strip()
             module = importlib.import_module(module_name)
-            modules.append((module.cinfo, module.ccomand))
+            modules.append(module)
     return modules
 
 
 @app.on_message(filters.me & filters.command("help", prefixes=prefix_userbot))
-async def help_command(client, message):
+async def help_command(_, message):
     modules = load_modules()
     prefix = prefix_userbot
-    help_text = "**Модулей загружено: {}**\n".format(len(modules))
-    for cinfo, ccomand in modules:
-        help_text += f"{cinfo} - {ccomand}\n"
+    help_text = "**⚙Модулей загружено: {}**\n".format(len(modules))
+    for module in modules:
+        help_text += f"{module.cinfo} - {module.ccomand}\n"
     help_text += (f"**Стандартные команды:**\n"
                   f"ℹ`{prefix_userbot}info` - инфо о юзерботе\n"
                   f"⌛`{prefix}ping` - Пишет пинг юб.\n"
                   f"💤`{prefix}off` - Отключает юзербота.")
-    await message.reply_text(help_text)
+    try:
+        await message.edit_text(help_text)
+    except:
+        await message.reply_text(help_text)
 
 
 @app.on_message(filters.me & filters.command("info", prefixes=prefix_userbot))
@@ -52,9 +55,9 @@ async def info_command(_, message):
         chat_id=message.chat.id,
         photo="https://user-images.githubusercontent.com/149149385/278584536-1dab252e-9fd4-4a0c-a80e-5e16c1220eaa.jpg",
         caption=f"**✨Telery**\n"
-                f"__🔧Version: 2.0__\n"
+                f"__🔧Version: 2.0.1__\n"
                 f"Source: @telery_userbot2\n"
-                f"**Dev-version💜**\n"
+                f"**Classic version❤**\n"
                 f"**Ping: {ping_time}ms**\n"
                 f"**Uptime: {uptime}**\n"
                 f"User: {username}"
@@ -79,14 +82,15 @@ def ping(_, message):
 
 
 def load_and_exec_modules():
-    with open("modules.info", "r") as file:
-        for line in file:
-            module_name = line.strip()
-            module = importlib.import_module(module_name)
-            if hasattr(module, 'register_math_commands'):
-                module.register_math_commands(app)
+    modules = load_modules()
+    for module in modules:
+        for attr_name in dir(module):
+            attr = getattr(module, attr_name)
+            if callable(attr) and (attr_name.startswith("register_") or attr_name.startswith("command_")):
+                attr(app)
+
 
 load_and_exec_modules()
 
-print("Основа Telery запущена! Версия Telery: 2.0. Тех. поддержка: https://t.me/TelerySupportBot")
+print("Основа Telery запущена! Версия Telery: 2.0.1. Тех. поддержка: https://t.me/TelerySupportBot")
 app.run()
